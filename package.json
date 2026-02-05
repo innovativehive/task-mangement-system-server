@@ -1,0 +1,24 @@
+{
+  "name": "innovative-hive-software-server",
+  "version": "1.0.0",
+  "description": "Innovative hive Software created by M.Sualeh Siddiqui",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.jsx"
+  },
+  "author": "M.Sualeh Siddiqui",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.7.2",
+    "node-cron": "^4.1.0",
+    "nodemon": "^3.1.7"
+  },
+  "type": "module"
+}
