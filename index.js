@@ -15,7 +15,6 @@ app.use(express.json())
 
 // Allowed origins
 const allowedOrigins = [
-    'https://innovative-hive-software.vercel.app',
     'http://localhost:5173',
 ];
 
@@ -23,7 +22,6 @@ const allowedOrigins = [
 const corsOptions = {
     origin: function (origin, callback) {
         if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-            // Allow requests with no origin (like mobile apps or curl requests)
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
