@@ -1,5 +1,5 @@
 import User from "../../Model/User.js";
-import TeamLeader from "../../Model/Team.js";
+import Designer from "../../Model/Designer.js";
 import jwt from 'jsonwebtoken';
 
 const createUser = async (userObj, res) => {
@@ -13,20 +13,8 @@ const createUser = async (userObj, res) => {
 
         const user = new User({
             name: name,
-            password: password, // ⚠️ hash this in real apps
-            userRights: {
-                salesForm: true,
-                manage: true,
-                reports: true,
-                cashBooks: {
-                    add: true,
-                    delete: true,
-                    report: true
-                },
-                dashboard: true,
-                ledger: true
-            },
-            notifications: []
+            password: password,
+            role: 'admin',
         });
 
         await user.save();
@@ -59,16 +47,16 @@ const authenticateExistingUser = async (userObj, res) => {
         if (user) {
             role = 'admin';
         } else {
-            // If not found in User, search in TeamLeader collection
-            user = await TeamLeader.findOne({ name: name.trim() });
+            // If not found in User, search in Designer collection
+            user = await Designer.findOne({ name: name.trim() });
 
             // If not found in both collections, return 404
             if (!user) {
                 return res.status(404).send({ success: false, message: 'User not found' });
             }
 
-            // If user is found in TeamLeader, assign role as 'team leader'
-            role = 'team leader';
+            // If user is found in Designer, assign role as 'team leader'
+            role = 'designer';
         }
 
         // Compare password (assuming passwords are hashed)
@@ -92,7 +80,6 @@ const authenticateExistingUser = async (userObj, res) => {
             user: {
                 name: user.name,
                 _id: user._id,
-                userRights: user.userRights,
                 role,
             }
         });
@@ -147,8 +134,8 @@ export {
 //         "Content-Type": "application/json"
 //     },
 //     body: JSON.stringify({
-//         name: "innovativehive",
-//         password: "innovativehive@admin786"
+//         name: "admin",
+//         password: "admin"
 //     })
 // })
 // .then(res => res.json())

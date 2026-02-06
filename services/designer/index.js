@@ -21,6 +21,7 @@ const addDesigner = async (userObj, res) => {
         // Create a new designer
         const newDesigner = new Designer({
             ...userObj,
+            role: 'designer',
         });
         await newDesigner.save(); // Save to the database
 

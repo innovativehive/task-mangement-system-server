@@ -1,10 +1,10 @@
 import Joi from 'joi';
 
-const SalesManSchema = Joi.object({
+const DesignerSchema = Joi.object({
     name: Joi.string().required(),
     team: Joi.string().required(),
     joiningDate: Joi.date().iso().required(),
     password: Joi.string().required(),
 });
 
-export default SalesManSchema;
+export default DesignerSchema;

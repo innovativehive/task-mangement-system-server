@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const { Schema, model } = mongoose;
 
-const SalesManSchema = new Schema({
+const DesignerSchema = new Schema({
     name: {
         type: String,
         required: true
@@ -19,8 +19,13 @@ const SalesManSchema = new Schema({
         type: String,
         required: true
     },
+    role: {
+        type: String,
+        required: false,
+        default: "designer"
+    },
 }, { timestamps: true });
 
-const SalesMan = model('SalesMan', SalesManSchema);
+const Designer = model('Designer', DesignerSchema);
 
-export default SalesMan;
+export default Designer;

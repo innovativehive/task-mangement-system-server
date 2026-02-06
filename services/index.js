@@ -18,6 +18,13 @@ import {
     deleteSpecificDesigner,
 } from "./designer/index.js";
 
+import {
+    getAllTasks,
+    addTask,
+    updateSpecificTask,
+    deleteSpecificTask,
+} from "./task/index.js";
+
 export {
     //auth
     createUser,
@@ -33,4 +40,9 @@ export {
     addDesigner,
     updateSpecificDesigner,
     deleteSpecificDesigner,
+    //Task
+    getAllTasks,
+    addTask,
+    updateSpecificTask,
+    deleteSpecificTask,
 }

@@ -2,13 +2,13 @@ import mongoose from "mongoose";
 
 const { Schema, model } = mongoose;
 
-const TeamLeaderSchema = new Schema({
+const TeamSchema = new Schema({
     name: {
         type: String,
         required: true
     },
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt fields
 
-const TeamLeader = model('TeamLeader', TeamLeaderSchema);
+const Team = model('Team', TeamSchema);
 
-export default TeamLeader;
+export default Team;
