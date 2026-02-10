@@ -26,20 +26,45 @@ const addTask = async (userObj, res) => {
     }
 }
 
-// Get all Tasks
-const getAllTasks = async (status, res) => {
+// Get all Tasks with optional pagination and status filter
+const getAllTasks = async (page, size, status, res) => {
+    console.log('page--->', page, 'size--->', size, 'status--->', status)
     try {
-        // Fetch all tasks from the database
-        const tasks =
-            status === 'all' ?
-                await Task.find({}).sort({ status: 1, name: 1 }) :
-                await Task.find({ status }).sort({ status: 1, name: 1 });
+        let tasks;
+        const totalTask = await Task.find({});
+        if (page !== 'undefined' && size !== 'undefined') {
+            const skip = (Number(page) - 1) * size;
 
-        // Send response with tasks
-        return res.status(200).send({ success: true, tasks });
+            if (status === 'all') {
+                tasks = await Task.find({}).sort({ name: 1 }).skip(skip).limit(size);
+            } else {
+                tasks = await Task.find({ status: status === 'show' ? true : false }).sort({ name: 1 }).skip(skip).limit(size);
+            }
+        } else {
+            tasks = await Task.find({}).sort({ name: 1 });
+        }
+
+        return res.status(200).send({ sucess: true, tasks, totalTasks: totalTask.length })
     } catch (error) {
-        console.error('Error fetching tasks:', error);
-        return res.status(500).send({ success: false, message: 'Internal Server Error' });
+        console.log('error--->', error)
+        res.status(500).send({ success: false, error, message: error.message })
+    }
+}
+
+// Search Tasks with optional filters, pagination, and text query
+const searchAllTasks = async (taskObj, res) => {
+    try {
+        const { name, status } = taskObj;
+        let data;
+        if (status) {
+            data = await Task.find({ name: { $regex: new RegExp(name.toLowerCase(), 'i') }, status });
+        } else {
+            data = await Task.find({ name: { $regex: new RegExp(name.toLowerCase(), 'i') } });
+        }
+        return res.status(200).send({ sucess: true, data });
+    } catch (error) {
+        console.log('error--->', error);
+        res.send({ success: false, error, message: error.message });
     }
 }
 
@@ -91,4 +116,5 @@ export {
     addTask,
     updateSpecificTask,
     deleteSpecificTask,
+    searchAllTasks,
 }

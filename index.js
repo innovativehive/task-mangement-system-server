@@ -33,11 +33,11 @@ const corsOptions = {
 
 // Middleware
 app.use(cors(corsOptions));
-
+;
 //Redirecting user request to Router folder
 app.use("/api", Router);
 
 
 app.listen(process.env.PORT, () => {
     console.log("server is running on port", process.env.PORT)
-}) 
+});

@@ -3,6 +3,7 @@ import {
     addTask,
     updateSpecificTask,
     deleteSpecificTask,
+    searchAllTasks,
 } from "../../services/index.js";
 
 const addNewTask = (req, res) => {
@@ -10,16 +11,19 @@ const addNewTask = (req, res) => {
     return addTask(userObj, res);
 }
 
-const getTasks = (req, res) => {
-    const { status } = req.params
-    return getAllTasks(status, res);
+const getTasks = async (req, res) => {
+    const { page, size, status } = req.params;
+    return getAllTasks(page, size, status, res)
+}
+
+const searchTasks = async (req, res) => {
+    const taskObj = req.body;
+    return searchAllTasks(taskObj, res)
 }
 
 const updateTask = (req, res) => {
     const { id } = req.params;
-    console.log("Updating Task with ID:", id);
     const updatedData = req.body;
-    console.log("Updated Data:", updatedData);
     return updateSpecificTask(updatedData, id, res);
 }
 
@@ -32,5 +36,6 @@ export {
     getTasks,
     addNewTask,
     updateTask,
-    deleteTask
+    deleteTask,
+    searchTasks
 }

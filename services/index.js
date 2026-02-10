@@ -23,6 +23,7 @@ import {
     addTask,
     updateSpecificTask,
     deleteSpecificTask,
+    searchAllTasks,
 } from "./task/index.js";
 
 export {
@@ -45,4 +46,5 @@ export {
     addTask,
     updateSpecificTask,
     deleteSpecificTask,
+    searchAllTasks,
 }
