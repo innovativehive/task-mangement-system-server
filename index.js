@@ -33,7 +33,7 @@ const corsOptions = {
 
 // Middleware
 app.use(cors(corsOptions));
-;
+
 //Redirecting user request to Router folder
 app.use("/api", Router);
 

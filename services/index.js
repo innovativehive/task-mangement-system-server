@@ -24,6 +24,8 @@ import {
     updateSpecificTask,
     deleteSpecificTask,
     searchAllTasks,
+    uploadTaskImage,
+    deleteFromCloudinary,
 } from "./task/index.js";
 
 export {
@@ -47,4 +49,6 @@ export {
     updateSpecificTask,
     deleteSpecificTask,
     searchAllTasks,
+    uploadTaskImage,
+    deleteFromCloudinary,
 }

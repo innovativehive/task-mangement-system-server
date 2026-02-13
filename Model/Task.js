@@ -59,7 +59,41 @@ const TaskSchema = new Schema({
 
     dueDate: {
         type: Date
-    }
+    },
+
+    referenceImage: [
+        {
+            url: {
+                type: String,
+                required: true
+            },
+            publicId: {
+                type: String,
+                required: true
+            },
+            uploadedAt: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ],
+
+    approvalWork: [
+        {
+            url: {
+                type: String,
+                required: true
+            },
+            publicId: {
+                type: String,
+                required: true
+            },
+            uploadedAt: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ]
 
 }, { timestamps: true });
 
