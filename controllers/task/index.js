@@ -35,41 +35,50 @@ const deleteTask = (req, res) => {
 }
 
 const uploadImage = (req, res) => {
-    const { taskId, fileType } = req.query;
-    const files = req.files;
+    const { taskId, characterIndex } = req.query;
+    const file = req.file;
 
-    if (!files || files.length === 0) {
-        return res.status(400).send({ success: false, message: 'No files uploaded' });
+    if (!file) {
+        return res.status(400).send({
+            success: false,
+            message: 'No file uploaded'
+        });
     }
 
     if (!taskId) {
-        return res.status(400).send({ success: false, message: 'taskId query parameter is required' });
+        return res.status(400).send({
+            success: false,
+            message: 'taskId is required'
+        });
     }
 
-    if (!fileType) {
-        return res.status(400).send({ success: false, message: 'fileType query parameter is required (referenceImage or approvalWork)' });
+    if (characterIndex === undefined) {
+        return res.status(400).send({
+            success: false,
+            message: 'characterIndex is required'
+        });
     }
 
-    const fileBuffers = files.map(file => file.buffer);
-    return uploadTaskImage(taskId, fileBuffers, fileType, res);
-}
+    return uploadTaskImage(
+        taskId,
+        characterIndex,
+        file.buffer,
+        res
+    );
+};
 
 const deleteImage = (req, res) => {
-    const { taskId, fileType, publicId } = req.query;
+    const { taskId, characterIndex } = req.query;
 
-    if (!publicId) {
-        return res.status(400).send({ success: false, message: 'publicId query parameter is required' });
+    if (!characterIndex) {
+        return res.status(400).send({ success: false, message: 'characterIndex query parameter is required' });
     }
 
     if (!taskId) {
         return res.status(400).send({ success: false, message: 'taskId query parameter is required' });
     }
 
-    if (!fileType) {
-        return res.status(400).send({ success: false, message: 'fileType query parameter is required (referenceImage or approvalWork)' });
-    }
-
-    return deleteFromCloudinary(taskId, fileType, publicId, res);
+    return deleteFromCloudinary(taskId, characterIndex, res);
 }
 
 export {

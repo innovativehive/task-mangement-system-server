@@ -10,6 +10,7 @@ const addTask = async (userObj, res) => {
     // Validate incoming request
     const { error } = TaskSchema.validate(userObj);
     if (error) {
+        console.log("errorrrr", error);
         return res.status(400).send({ success: false, message: error.details[0].message });
     };
 
@@ -75,6 +76,7 @@ const searchAllTasks = async (taskObj, res) => {
 const updateSpecificTask = async (updatedData, id, res) => {
 
     try {
+        console.log(updatedData)
         const taskExist = await Task.findById(id);
 
         if (!taskExist) {
@@ -84,7 +86,7 @@ const updateSpecificTask = async (updatedData, id, res) => {
         // Find the task by ID and update with only provided fields
         const updatedTask = await Task.findByIdAndUpdate(
             id,
-            { $set: updatedData },
+            updatedData,
             { new: true, runValidators: true }
         );
 
@@ -137,107 +139,188 @@ const deleteSpecificTask = async (id, res) => {
 }
 
 // Upload images for a task
-const uploadTaskImage = async (taskId, fileBuffers, fileType, res) => {
+const uploadTaskImage = async (
+    taskId,
+    characterIndex,
+    fileBuffer,
+    res
+) => {
     try {
-        // Check if task exists
-        const taskExist = await Task.findById(taskId);
-        if (!taskExist) {
-            return res.status(404).send({ success: false, message: 'Task not found' });
+        const task = await Task.findById(taskId);
+
+        if (!task) {
+            return res.status(404).send({
+                success: false,
+                message: 'Task not found'
+            });
         }
 
-        // Check if file buffers exist
-        if (!fileBuffers || fileBuffers.length === 0) {
-            return res.status(400).send({ success: false, message: 'No image files provided' });
-        }
-
-        // Validate fileType parameter
-        if (!fileType || !['referenceImage', 'approvalWork'].includes(fileType)) {
-            return res.status(400).send({ success: false, message: 'Invalid fileType parameter. Use referenceImage or approvalWork' });
-        }
-
-        const folder = fileType === 'referenceImage' ? 'task-management/reference-images' : 'task-management/approval-work';
-        const uploadedFiles = [];
-        let uploadCount = 0;
-
-        // Process each file
-        fileBuffers.forEach((fileBuffer) => {
-            const uploadStream = cloudinary.uploader.upload_stream(
-                {
-                    folder: folder,
-                    resource_type: 'auto',
-                    public_id: `${fileType}-${taskId}-${Date.now()}-${uploadCount}`,
-                },
-                async (error, result) => {
-                    if (error) {
-                        console.error('Cloudinary upload error:', error);
-                        return res.status(500).send({ success: false, message: 'Failed to upload image', error: error.message });
+        const result = await new Promise((resolve, reject) => {
+            const uploadStream =
+                cloudinary.uploader.upload_stream(
+                    {
+                        folder: 'task-management/reference-images',
+                        resource_type: 'auto',
+                        public_id: `character-${taskId}-${characterIndex}-${Date.now()}`
+                    },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
                     }
-
-                    // Store file details
-                    const fileDetails = {
-                        url: result.secure_url,
-                        publicId: result.public_id,
-                    };
-
-                    uploadedFiles.push(fileDetails);
-
-                    // Check if all files are uploaded
-                    if (uploadedFiles.length === fileBuffers.length) {
-                        try {
-                            // Update task with the uploaded files
-                            const updatedTask = await Task.findByIdAndUpdate(
-                                taskId,
-                                { $push: { [fileType]: { $each: uploadedFiles } } },
-                                { new: true }
-                            );
-
-                            return res.status(200).send({
-                                success: true,
-                                message: `Files uploaded and saved to ${fileType} successfully`,
-                                task: updatedTask,
-                                uploadedFiles: uploadedFiles
-                            });
-                        } catch (dbError) {
-                            console.error('Error updating task with files:', dbError);
-                            return res.status(500).send({ success: false, message: 'Failed to save files to database' });
-                        }
-                    }
-                }
-            );
+                );
 
             uploadStream.end(fileBuffer);
-            uploadCount++;
         });
+
+        const updatedTask =
+            await Task.findByIdAndUpdate(
+                taskId,
+                {
+                    $set: {
+                        [`characters.${characterIndex}.image.url`]:
+                            result.secure_url,
+                        [`characters.${characterIndex}.image.publicId`]:
+                            result.public_id
+                    }
+                },
+                { new: true }
+            );
+
+        return res.status(200).send({
+            success: true,
+            task: updatedTask
+        });
+
     } catch (error) {
-        console.error('Error uploading images:', error);
-        return res.status(500).send({ success: false, message: 'Internal Server Error', error: error.message });
-    }
-}
-
-const deleteFromCloudinary = async (taskId, fileType, publicId, res) => {
-    try {
-        const decodedPublicId = decodeURIComponent(publicId);
-        // Check for existing image and delete it if present
-        await cloudinary.api.delete_resources([decodedPublicId], { resource_type: 'image' }, async (deleteError, deleteResult) => {
-            if (deleteError && deleteError.http_code !== 404) { // If error is not 'not found'
-                console.error("Cloudinary delete error:", deleteError);
-                return res.status(500).send({ success: false, error: deleteError });
-            }
+        return res.status(500).send({
+            success: false,
+            message: error.message
         });
+    }
+};
+// const uploadTaskImage = async (taskId, fileBuffers, fileType, res) => {
+//     try {
+//         // Check if task exists
+//         const taskExist = await Task.findById(taskId);
+//         if (!taskExist) {
+//             return res.status(404).send({ success: false, message: 'Task not found' });
+//         }
 
+//         // Check if file buffers exist
+//         if (!fileBuffers || fileBuffers.length === 0) {
+//             return res.status(400).send({ success: false, message: 'No image files provided' });
+//         }
 
-        // Then, remove the image reference from the Task document (if it exists)
-        const task = await Task.findOneAndUpdate(
-            { _id: taskId },
-            { $pull: { [fileType]: { publicId: decodedPublicId } } }, // Remove the image with the specific decodedPublicId
+//         // Validate fileType parameter
+//         if (!fileType || !['referenceImage', 'approvalWork'].includes(fileType)) {
+//             return res.status(400).send({ success: false, message: 'Invalid fileType parameter. Use referenceImage or approvalWork' });
+//         }
+
+//         const folder = fileType === 'referenceImage' ? 'task-management/reference-images' : 'task-management/approval-work';
+//         const uploadedFiles = [];
+//         let uploadCount = 0;
+
+//         // Process each file
+//         fileBuffers.forEach((fileBuffer) => {
+//             const uploadStream = cloudinary.uploader.upload_stream(
+//                 {
+//                     folder: folder,
+//                     resource_type: 'auto',
+//                     public_id: `${fileType}-${taskId}-${Date.now()}-${uploadCount}`,
+//                 },
+//                 async (error, result) => {
+//                     if (error) {
+//                         console.error('Cloudinary upload error:', error);
+//                         return res.status(500).send({ success: false, message: 'Failed to upload image', error: error.message });
+//                     }
+
+//                     // Store file details
+//                     const fileDetails = {
+//                         url: result.secure_url,
+//                         publicId: result.public_id,
+//                     };
+
+//                     uploadedFiles.push(fileDetails);
+
+//                     // Check if all files are uploaded
+//                     if (uploadedFiles.length === fileBuffers.length) {
+//                         try {
+//                             // Update task with the uploaded files
+//                             const updatedTask = await Task.findByIdAndUpdate(
+//                                 taskId,
+//                                 { $push: { [fileType]: { $each: uploadedFiles } } },
+//                                 { new: true }
+//                             );
+
+//                             return res.status(200).send({
+//                                 success: true,
+//                                 message: `Files uploaded and saved to ${fileType} successfully`,
+//                                 task: updatedTask,
+//                                 uploadedFiles: uploadedFiles
+//                             });
+//                         } catch (dbError) {
+//                             console.error('Error updating task with files:', dbError);
+//                             return res.status(500).send({ success: false, message: 'Failed to save files to database' });
+//                         }
+//                     }
+//                 }
+//             );
+
+//             uploadStream.end(fileBuffer);
+//             uploadCount++;
+//         });
+//     } catch (error) {
+//         console.error('Error uploading images:', error);
+//         return res.status(500).send({ success: false, message: 'Internal Server Error', error: error.message });
+//     }
+// }
+
+const deleteFromCloudinary = async (taskId, characterIndex, res) => {
+    try {
+        const task = await Task.findById(taskId);
+
+        if (!task) {
+            return res.status(404).send({
+                success: false,
+                message: "Task not found"
+            });
+        }
+
+        const character = task.characters[characterIndex];
+
+        if (!character) {
+            return res.status(404).send({
+                success: false,
+                message: "Character not found"
+            });
+        }
+
+        if (!character.image.publicId) {
+            return res.status(400).send({
+                success: false,
+                message: "No image found for this character"
+            });
+        }
+
+        await cloudinary.uploader.destroy(
+            character.image.publicId
+        );
+
+        const updatedTask = await Task.findByIdAndUpdate(
+            taskId,
+            {
+                $set: {
+                    [`characters.${characterIndex}.image`]: null,
+                }
+            },
             { new: true }
         );
 
-        if (!task) {
-            return res.status(404).send({ success: false, message: 'Task not found' });
-        }
-
-        return res.status(200).send({ success: true, message: 'Image deleted and Task updated' });
+        return res.status(200).send({
+            success: true,
+            message: "Image deleted successfully",
+            task: updatedTask
+        });
 
     } catch (error) {
         console.log("error", error);

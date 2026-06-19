@@ -1,31 +1,70 @@
 import Joi from "joi";
 
+const CharacterSchema = Joi.object({
+  description: Joi.string()
+    .trim()
+    .required()
+    .messages({
+      "string.empty": "Character description is required"
+    }),
+
+  image: Joi.object({
+    url: Joi.string().allow("", null),
+    publicId: Joi.string().allow("", null)
+  }).optional().allow(null),
+});
+
 const TaskSchema = Joi.object({
-  title: Joi.string().trim().min(3).required(),
+  title: Joi.string()
+    .trim()
+    .min(3)
+    .required(),
 
-  saleCode: Joi.string().trim().required(),
+  saleCode: Joi.string()
+    .trim()
+    .required(),
 
-  description: Joi.string().allow("").optional(),
+  assignedTo: Joi.string()
+    .required(),
 
-  assignedTo: Joi.string().required(),
+  numberOfCharacters: Joi.number()
+    .integer()
+    .min(1)
+    .required(),
 
-  urgent: Joi.boolean().default(false),
+  characters: Joi.array()
+    .items(CharacterSchema)
+    .min(1)
+    .required(),
 
-  status: Joi.string().valid(
-    "assigned",
-    "inProgress",
-    "pendingApproval",
-    "rejected",
-    "completed"
-  ).default("assigned"),
+  urgent: Joi.boolean()
+    .default(false),
 
-  fifoOrder: Joi.number().integer().positive().required(),
+  status: Joi.string()
+    .valid(
+      "assigned",
+      "inProgress",
+      "pendingApproval",
+      "rejected",
+      "completed"
+    )
+    .default("assigned"),
 
-  submissionUrl: Joi.string().uri().allow(null, ""),
+  fifoOrder: Joi.number()
+    .integer()
+    .positive()
+    .required(),
 
-  feedback: Joi.string().allow(null, ""),
+  submissionUrl: Joi.string()
+    .uri()
+    .allow("", null),
 
-  dueDate: Joi.date().iso().optional()
+  feedback: Joi.string()
+    .allow("", null),
+
+  dueDate: Joi.date()
+    .iso()
+    .optional()
 });
 
 export default TaskSchema;
