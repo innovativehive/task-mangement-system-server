@@ -64,13 +64,14 @@ const TaskSchema = new Schema({
     status: {
         type: String,
         enum: [
+            "created",
             "assigned",
             "inProgress",
             "pendingApproval",
             "rejected",
             "completed"
         ],
-        default: "assigned"
+        default: "created"
     },
 
     fifoOrder: {
@@ -80,10 +81,6 @@ const TaskSchema = new Schema({
     },
 
     submissionUrl: {
-        type: String
-    },
-
-    feedback: {
         type: String
     },
 
@@ -97,16 +94,33 @@ const TaskSchema = new Schema({
                 type: String,
                 required: true
             },
+
             publicId: {
                 type: String,
                 required: true
             },
+
+            feedback: {
+                type: String,
+                default: ""
+            },
+
+            feedbackAt: {
+                type: Date
+            },
+
             uploadedAt: {
                 type: Date,
                 default: Date.now
             }
         }
-    ]
+    ],
+
+    username: {
+        type: String,
+        required: true,
+        trim: true
+    },
 
 }, { timestamps: true });
 

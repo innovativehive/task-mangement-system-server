@@ -26,6 +26,8 @@ import {
     searchAllTasks,
     uploadTaskImage,
     deleteFromCloudinary,
+    uploadTaskApprovalImage,
+    deleteApprovalFromCloudinary,
 } from "./task/index.js";
 
 export {
@@ -51,4 +53,6 @@ export {
     searchAllTasks,
     uploadTaskImage,
     deleteFromCloudinary,
+    uploadTaskApprovalImage,
+    deleteApprovalFromCloudinary,
 }

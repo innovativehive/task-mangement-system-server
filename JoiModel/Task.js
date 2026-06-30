@@ -42,13 +42,14 @@ const TaskSchema = Joi.object({
 
   status: Joi.string()
     .valid(
+      "created",
       "assigned",
       "inProgress",
       "pendingApproval",
       "rejected",
       "completed"
     )
-    .default("assigned"),
+    .default("created"),
 
   fifoOrder: Joi.number()
     .integer()
@@ -59,12 +60,14 @@ const TaskSchema = Joi.object({
     .uri()
     .allow("", null),
 
-  feedback: Joi.string()
-    .allow("", null),
-
   dueDate: Joi.date()
     .iso()
-    .optional()
+    .optional(),
+
+  username: Joi.string()
+    .trim()
+    .min(3)
+    .required(),
 });
 
 export default TaskSchema;

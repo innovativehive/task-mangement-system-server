@@ -6,6 +6,8 @@ import {
     searchAllTasks,
     uploadTaskImage,
     deleteFromCloudinary,
+    uploadTaskApprovalImage,
+    deleteApprovalFromCloudinary,
 } from "../../services/index.js";
 
 const addNewTask = (req, res) => {
@@ -14,7 +16,7 @@ const addNewTask = (req, res) => {
 }
 
 const getTasks = async (req, res) => {
-    const { page, size, status, designer } = req.params;
+    const { page, size, status, designer } = req.query;
     return getAllTasks(page, size, status, designer, res)
 }
 
@@ -35,7 +37,6 @@ const deleteTask = (req, res) => {
 }
 
 const uploadImage = (req, res) => {
-    const { taskId, characterIndex } = req.query;
     const file = req.file;
 
     if (!file) {
@@ -81,6 +82,37 @@ const deleteImage = (req, res) => {
     return deleteFromCloudinary(taskId, characterIndex, res);
 }
 
+const uploadApprovalImage = (req, res) => {
+    const { taskId } = req.query;
+    const files = req.files;
+
+    if (!files || files.length === 0) {
+        return res.status(400).send({ success: false, message: 'No files uploaded' });
+    }
+
+    if (!taskId) {
+        return res.status(400).send({ success: false, message: 'taskId query parameter is required' });
+    }
+
+    const fileBuffers = files.map(file => file.buffer);
+    return uploadTaskApprovalImage(taskId, fileBuffers, res);
+}
+
+const deleteApprovalImage = (req, res) => {
+    const { taskId, publicId } = req.query;
+
+    if (!publicId) {
+        return res.status(400).send({ success: false, message: 'publicId query parameter is required' });
+    }
+
+    if (!taskId) {
+        return res.status(400).send({ success: false, message: 'taskId query parameter is required' });
+    }
+
+    return deleteApprovalFromCloudinary(taskId, publicId, res);
+}
+
+
 export {
     getTasks,
     addNewTask,
@@ -89,4 +121,6 @@ export {
     searchTasks,
     uploadImage,
     deleteImage,
+    uploadApprovalImage,
+    deleteApprovalImage,
 }
