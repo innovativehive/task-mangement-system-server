@@ -21,8 +21,7 @@ const TaskSchema = Joi.object({
     .required(),
 
   saleCode: Joi.string()
-    .trim()
-    .required(),
+    .trim().allow("", null),
 
   assignedTo: Joi.string()
     .required(),
@@ -36,6 +35,10 @@ const TaskSchema = Joi.object({
     .items(CharacterSchema)
     .min(1)
     .required(),
+
+  revisionRequests: Joi.array()
+    .items(CharacterSchema)
+    .default([]),
 
   urgent: Joi.boolean()
     .default(false),

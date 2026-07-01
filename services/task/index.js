@@ -17,7 +17,7 @@ const addTask = async (userObj, res) => {
         const newTask = new Task({
             ...userObj,
         });
-        await newTask.save(); // Save to the database
+        await newTask.save();
 
         return res.status(201).send({ success: true, message: 'Task added successfully', task: newTask });
     } catch (error) {
@@ -188,6 +188,7 @@ const uploadTaskImage = async (
     taskId,
     characterIndex,
     fileBuffer,
+    type,
     res
 ) => {
     try {
@@ -200,36 +201,72 @@ const uploadTaskImage = async (
             });
         }
 
-        const result = await new Promise((resolve, reject) => {
-            const uploadStream =
-                cloudinary.uploader.upload_stream(
+        let updatedTask;
+
+        if (type === 'reference') {
+            const result = await new Promise((resolve, reject) => {
+                const uploadStream =
+                    cloudinary.uploader.upload_stream(
+                        {
+                            folder: 'task-management/reference-images',
+                            resource_type: 'auto',
+                            public_id: `character-${taskId}-${characterIndex}-${Date.now()}`
+                        },
+                        (error, result) => {
+                            if (error) reject(error);
+                            else resolve(result);
+                        }
+                    );
+
+                uploadStream.end(fileBuffer);
+            });
+
+            updatedTask =
+                await Task.findByIdAndUpdate(
+                    taskId,
                     {
-                        folder: 'task-management/reference-images',
-                        resource_type: 'auto',
-                        public_id: `character-${taskId}-${characterIndex}-${Date.now()}`
+                        $set: {
+                            [`characters.${characterIndex}.image.url`]:
+                                result.secure_url,
+                            [`characters.${characterIndex}.image.publicId`]:
+                                result.public_id
+                        }
                     },
-                    (error, result) => {
-                        if (error) reject(error);
-                        else resolve(result);
-                    }
+                    { new: true }
                 );
 
-            uploadStream.end(fileBuffer);
-        });
+        } else if (type === 'revision') {
+            const result = await new Promise((resolve, reject) => {
+                const uploadStream =
+                    cloudinary.uploader.upload_stream(
+                        {
+                            folder: 'task-management/revision-images',
+                            resource_type: 'auto',
+                            public_id: `character-${taskId}-${characterIndex}-${Date.now()}`
+                        },
+                        (error, result) => {
+                            if (error) reject(error);
+                            else resolve(result);
+                        }
+                    );
 
-        const updatedTask =
-            await Task.findByIdAndUpdate(
-                taskId,
-                {
-                    $set: {
-                        [`characters.${characterIndex}.image.url`]:
-                            result.secure_url,
-                        [`characters.${characterIndex}.image.publicId`]:
-                            result.public_id
-                    }
-                },
-                { new: true }
-            );
+                uploadStream.end(fileBuffer);
+            });
+
+            updatedTask =
+                await Task.findByIdAndUpdate(
+                    taskId,
+                    {
+                        $set: {
+                            [`revisionRequests.${characterIndex}.image.url`]:
+                                result.secure_url,
+                            [`revisionRequests.${characterIndex}.image.publicId`]:
+                                result.public_id
+                        }
+                    },
+                    { new: true }
+                );
+        }
 
         return res.status(200).send({
             success: true,
@@ -349,7 +386,8 @@ const uploadTaskApprovalImage = async (
                         approvalWork: {
                             $each: uploadedFiles
                         }
-                    }
+                    },
+                    revisionRequests: [],
                 },
                 {
                     new: true
@@ -417,8 +455,6 @@ const deleteApprovalFromCloudinary = async (
         const decodedPublicId =
             decodeURIComponent(publicId);
 
-        console.log("decodedPublicId:", decodedPublicId);
-
         await cloudinary.uploader.destroy(
             decodedPublicId
         );
@@ -434,8 +470,6 @@ const deleteApprovalFromCloudinary = async (
             },
             { new: true }
         );
-
-        console.log(updatedTask.approvalWork);
 
         if (!task) {
             return res.status(404).send({

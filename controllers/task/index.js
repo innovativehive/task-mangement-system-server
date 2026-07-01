@@ -38,6 +38,7 @@ const deleteTask = (req, res) => {
 
 const uploadImage = (req, res) => {
     const file = req.file;
+    const { taskId, characterIndex, type } = req.query;
 
     if (!file) {
         return res.status(400).send({
@@ -64,6 +65,7 @@ const uploadImage = (req, res) => {
         taskId,
         characterIndex,
         file.buffer,
+        type,
         res
     );
 };

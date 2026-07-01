@@ -28,8 +28,7 @@ const TaskSchema = new Schema({
 
     saleCode: {
         type: String,
-        required: true,
-        unique: true,
+        required: false,
         trim: true
     },
 
@@ -54,6 +53,10 @@ const TaskSchema = new Schema({
             },
             message: "At least one character is required"
         }
+    },
+
+    revisionRequests: {
+        type: [CharacterSchema],
     },
 
     urgent: {
@@ -119,7 +122,8 @@ const TaskSchema = new Schema({
     username: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        unique: true,
     },
 
 }, { timestamps: true });
