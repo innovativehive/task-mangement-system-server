@@ -13,7 +13,7 @@ db.once("open", () => console.log("db connected"))
 app.use(express.json())
 
 const allowedOrigins = [
-    'http://localhost:5173',
+    'https://avatarpick.com',
 ];
 
 const corsOptions = {
