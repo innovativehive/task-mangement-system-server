@@ -1,27 +1,37 @@
 import Joi from "joi";
 
-const CharacterSchema = Joi.object({
+const DescriptionSchema = Joi.object({
   description: Joi.string()
     .trim()
     .required()
     .messages({
-      "string.empty": "Character description is required"
+      "string.empty": "Description is required",
     }),
 
   image: Joi.object({
     url: Joi.string().allow("", null),
-    publicId: Joi.string().allow("", null)
-  }).optional().allow(null),
+    publicId: Joi.string().allow("", null),
+  })
+    .optional()
+    .allow(null),
 });
+
+const CharacterSchema = Joi.array()
+  .items(DescriptionSchema)
+  .min(1)
+  .required()
+  .messages({
+    "array.min": "At least one description is required",
+  });
 
 const TaskSchema = Joi.object({
   title: Joi.string()
     .trim()
-    .min(3)
     .required(),
 
   saleCode: Joi.string()
-    .trim().allow("", null),
+    .trim()
+    .allow("", null),
 
   assignedTo: Joi.string()
     .required(),
@@ -31,14 +41,21 @@ const TaskSchema = Joi.object({
     .min(1)
     .required(),
 
+  // Array of Characters
   characters: Joi.array()
     .items(CharacterSchema)
     .min(1)
-    .required(),
+    .required()
+    .messages({
+      "array.min": "At least one character is required",
+    }),
 
+  // Array of Revision Requests (same structure)
   revisionRequests: Joi.array()
     .items(CharacterSchema)
-    .default([]),
+    .messages({
+      "array.min": "At least one character is required",
+    }).allow(null),
 
   urgent: Joi.boolean()
     .default(false),
@@ -55,21 +72,15 @@ const TaskSchema = Joi.object({
     .default("created"),
 
   fifoOrder: Joi.number()
-    .integer()
-    .positive()
     .required(),
 
   submissionUrl: Joi.string()
-    .uri()
     .allow("", null),
 
-  dueDate: Joi.date()
-    .iso()
-    .optional(),
+  dueDate: Joi.date(),
 
   username: Joi.string()
     .trim()
-    .min(3)
     .required(),
 });
 

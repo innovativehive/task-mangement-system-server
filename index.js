@@ -10,9 +10,10 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error in mongo"))
 db.once("open", () => console.log("db connected"))
 
-app.use(express.json())
+app.use(express.json());
 
 const allowedOrigins = [
+    'http://localhost:5173',
     'https://avatarpick.com',
 ];
 

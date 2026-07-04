@@ -13,7 +13,4 @@ Route.post('/add', addNewDesigner);
 Route.put('/update/:id', updateDesigner);
 Route.delete('/delete/:id', deleteDesigner);
 
-
-
-
 export default Route;

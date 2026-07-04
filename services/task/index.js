@@ -6,9 +6,9 @@ const addTask = async (userObj, res) => {
     const lastTask = await Task.findOne().sort({ fifoOrder: -1 });
     userObj.fifoOrder = lastTask ? lastTask.fifoOrder + 1 : 1;
 
-    // Validate incoming request
     const { error } = TaskSchema.validate(userObj);
     if (error) {
+        console.log('Validation error:', error.details[0].message);
         return res.status(400).send({ success: false, message: error.details[0].message });
     };
 
@@ -187,6 +187,7 @@ const deleteSpecificTask = async (id, res) => {
 const uploadTaskImage = async (
     taskId,
     characterIndex,
+    imageIndex,
     fileBuffer,
     type,
     res
@@ -210,7 +211,7 @@ const uploadTaskImage = async (
                         {
                             folder: 'task-management/reference-images',
                             resource_type: 'auto',
-                            public_id: `character-${taskId}-${characterIndex}-${Date.now()}`
+                            public_id: `character-${taskId}-${characterIndex}-${imageIndex}-${Date.now()}`
                         },
                         (error, result) => {
                             if (error) reject(error);
@@ -226,9 +227,9 @@ const uploadTaskImage = async (
                     taskId,
                     {
                         $set: {
-                            [`characters.${characterIndex}.image.url`]:
+                            [`characters.${characterIndex}.${imageIndex}.image.url`]:
                                 result.secure_url,
-                            [`characters.${characterIndex}.image.publicId`]:
+                            [`characters.${characterIndex}.${imageIndex}.image.publicId`]:
                                 result.public_id
                         }
                     },
@@ -242,7 +243,7 @@ const uploadTaskImage = async (
                         {
                             folder: 'task-management/revision-images',
                             resource_type: 'auto',
-                            public_id: `character-${taskId}-${characterIndex}-${Date.now()}`
+                            public_id: `character-${taskId}-${characterIndex}-${imageIndex}-${Date.now()}`
                         },
                         (error, result) => {
                             if (error) reject(error);
@@ -258,9 +259,9 @@ const uploadTaskImage = async (
                     taskId,
                     {
                         $set: {
-                            [`revisionRequests.${characterIndex}.image.url`]:
+                            [`revisionRequests.${characterIndex}.${imageIndex}.image.url`]:
                                 result.secure_url,
-                            [`revisionRequests.${characterIndex}.image.publicId`]:
+                            [`revisionRequests.${characterIndex}.${imageIndex}.image.publicId`]:
                                 result.public_id
                         }
                     },

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const { Schema, model } = mongoose;
 
-const CharacterSchema = new Schema({
+const DescriptionSchema = new Schema({
     description: {
         type: String,
         required: true,
@@ -45,7 +45,18 @@ const TaskSchema = new Schema({
     },
 
     characters: {
-        type: [CharacterSchema],
+        type: [
+            {
+                type: [DescriptionSchema],
+                required: true,
+                validate: {
+                    validator(value) {
+                        return value.length > 0;
+                    },
+                    message: "At least one description is required"
+                }
+            },
+        ],
         required: true,
         validate: {
             validator(value) {
@@ -56,7 +67,13 @@ const TaskSchema = new Schema({
     },
 
     revisionRequests: {
-        type: [CharacterSchema],
+        type: [
+            {
+                type: [DescriptionSchema],
+                required: false,
+            },
+        ],
+        required: false,
     },
 
     urgent: {
